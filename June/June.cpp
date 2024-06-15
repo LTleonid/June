@@ -1,87 +1,160 @@
 ﻿#include <iostream>
+#include <windows.h>
+#include <ctime>
 #include <conio.h>
-#include <windows.h> // For system("CLS")
-
 using namespace std;
 
-#define screen_x 120
-#define screen_y 29
-#define map_x 15
-#define map_y 15
+const int start_map_size = 40;
+const int VIEW_WIDTH = 40;
+const int VIEW_HEIGHT = 20;
 
-void map_render(int* player_pos, int map_size_x, int map_size_y, char map[map_x][map_y], char player_char) {
-    int distance = 0;
-    for (int i = 0; i < map_size_x; i++) {
-        for (int j = 0; j < map_size_y; j++) {
-            map[i][j] = '.';
-        }
+const char TREE = '^';
+const char COPPER = '#';
+const char FLOOR = ' ';
+
+char** map;
+int mapWidth = start_map_size;
+int mapHeight = start_map_size;
+
+void updateMap(int width, int height) {
+    map = new char* [height];
+    for (int y = 0; y < height; ++y) {
+        map[y] = new char[width];
     }
-    map[player_pos[0]][player_pos[1]] = player_char;
-    map[2][2] = '#';
+}
 
-    for (int i = 1; i <= player_pos[0]; i++) {
-        if (map[player_pos[0] - i][player_pos[1]] != '#') {
-            if (player_pos[0] - i >= 0) {
-                map[player_pos[0] - i][player_pos[1]] = '@';
+void deleteMap(int width, int height) {
+    for (int y = 0; y < height; ++y) {
+        delete[] map[y];
+    }
+    delete[] map;
+}
+
+void generateMap(int width, int height) {
+    srand(time(0));
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int randNum = rand() % 100;
+            if (randNum < 10) {
+                map[y][x] = TREE;
+            }
+            else if (randNum < 30) {
+                map[y][x] = COPPER;
+            }
+            else {
+                map[y][x] = FLOOR;
             }
         }
-        else {
-            distance = i;
-            break;
-        }
     }
-    /*
-    for (int i = 0; i < map_size_x; i++) {
-        for (int j = 0; j < map_size_y; j++) {
-            cout << map[i][j];
-        }
-        cout << endl;
-    }*/
-    cout << "Distance: " << distance << endl;
-    if (distance) {
-    int rect_width = map_x / (distance > 0 ? distance : 1);
-    int rect_height = map_x / (distance > 0 ? distance : 1);
-    
-        for (int i = 0; i < map_x; i++) {
-            for (int j = 0; j < map_y; j++) {
-                if (i < rect_height && j < rect_width) {
-                    cout << '*';
+}
+
+void expandMap(int player[2]) {
+    int newWidth = mapWidth * 2;
+    int newHeight = mapHeight * 2;
+
+    char** newMap = new char* [newHeight];
+    for (int y = 0; y < newHeight; ++y) {
+        newMap[y] = new char[newWidth];
+    }
+
+    for (int y = 0; y < newHeight; ++y) {
+        for (int x = 0; x < newWidth; ++x) {
+            if (y < mapHeight && x < mapWidth) {
+                newMap[y][x] = map[y][x];
+            }
+            else {
+                int randNum = rand() % 100;
+                if (randNum < 10) {
+                    newMap[y][x] = TREE;
+                }
+                else if (randNum < 30) {
+                    newMap[y][x] = COPPER;
                 }
                 else {
-                    cout << ' ';
+                    newMap[y][x] = FLOOR;
                 }
             }
-            cout << endl;
         }
     }
 
+    deleteMap(mapWidth, mapHeight);
+
+    map = newMap;
+    mapWidth = newWidth;
+    mapHeight = newHeight;
+
+    player[0] += mapWidth / 4;
+    player[1] += mapHeight / 4;
+}
+
+void printMap(int player[2]) {
+    int startX = max(0, player[0] - VIEW_WIDTH / 2);
+    int startY = max(0, player[1] - VIEW_HEIGHT / 2);
+    int endX = min(mapWidth, startX + VIEW_WIDTH);
+    int endY = min(mapHeight, startY + VIEW_HEIGHT);
+
+    for (int y = startY; y < endY; ++y) {
+        for (int x = startX; x < endX; ++x) {
+            if (x == player[0] && y == player[1]) {
+                cout << "\033[38;5;20m\033[48;5;1mP\033[0m";
+            }
+            else {
+                switch (map[y][x]) {
+                case TREE:
+                    cout << "\033[48;5;22m \033[0m";
+                    break;
+                case COPPER:
+                    cout << "\033[48;5;172m \033[0m";
+                    break;
+                case FLOOR:
+                    cout << "\033[48;5;28m \033[0m";
+                    break;
+               
+                }
+            }
+        }
+        cout << endl;
+    }
+}
+
+void movePlayer(int player[2], char move) {
+    switch (move) {
+    case 'w':
+        if (player[1] > 0) player[1]--;
+        break;
+    case 's':
+        if (player[1] < mapHeight - 1) player[1]++;
+        break;
+    case 'a':
+        if (player[0] > 0) player[0]--;
+        break;
+    case 'd':
+        if (player[0] < mapWidth - 1) player[0]++;
+        break;
+    }
+
+    if (player[0] <= VIEW_WIDTH / 2 || player[1] <= VIEW_HEIGHT / 2 ||
+        player[0] >= mapWidth - VIEW_WIDTH / 2 || player[1] >= mapHeight - VIEW_HEIGHT / 2) {
+        expandMap(player);
+    }
 }
 
 int main() {
-    char map[map_x][map_y];
-    int player_pos[2] = { 0, 0 };
-    char player_char = '^';
+    updateMap(start_map_size, start_map_size);
+    generateMap(start_map_size, start_map_size);
+    //Старт Позиция
+    int player[2] = { 100,0 };
 
     while (true) {
-        system("CLS");
-
-        map_render(player_pos, map_x, map_y, map, player_char);
-
-        switch (_getch()) {
-        case 'w':
-            if (player_pos[0] > 0 && map[player_pos[0] - 1][player_pos[1]] != '#') player_pos[0]--;
-            break;
-        case 'a':
-            if (player_pos[1] > 0 && map[player_pos[0]][player_pos[1] - 1] != '#') player_pos[1]--;
-            break;
-        case 's':
-            if (player_pos[0] < map_x - 1 && map[player_pos[0] + 1][player_pos[1]] != '#') player_pos[0]++;
-            break;
-        case 'd':
-            if (player_pos[1] < map_y - 1 && map[player_pos[0]][player_pos[1] + 1] != '#') player_pos[1]++;
-            break;
-        default:
-            break;
-        }
+        system("cls");
+        printMap(player);
+        cout << endl << "X: " << (int)player[0] << " | Y: " << (int)player[1];
+        char move = _getch();
+        movePlayer(player, move);
+        
     }
+
+    deleteMap(mapWidth, mapHeight);
+    return 0;
 }
