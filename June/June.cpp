@@ -20,7 +20,7 @@ int mapHeight = start_map_size;
 
 // Данные игрока
 string* backpack;
-char player_char = 'P'; // Using a single character for the player
+string player_char = "LT Team";
 enum class direction { UP = '^', DOWN = 'v', LEFT = '<', RIGHT = '>' };
 
 int local_x;
@@ -124,8 +124,7 @@ void backpack_menu() {
     }
 }
 
-// 75 <- 77 ->  72 ^ 80 |
-void movePlayer(int player[2], char move) {
+void movePlayer(int player[2], int move) {
     switch (move) {
     case 'w':
         if (player[1] > 0) player[1]--;
@@ -150,6 +149,18 @@ void movePlayer(int player[2], char move) {
     case 'b':
         backpack_menu();
         break;
+    case 72: // Вверх стрелка
+        player_char = '^';
+        break;
+    case 80: // Вниз стрелка
+        player_char = 'v';
+        break;
+    case 75: // Влево стрелка
+        player_char = '<';
+        break;
+    case 77: // Вправо стрелка
+        player_char = '>';
+        break;
     default:
         break;
     }
@@ -160,7 +171,8 @@ void movePlayer(int player[2], char move) {
 }
 
 int main() {
-    // Enable UTF-8 in the console
+    int move = ' ';
+
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -176,30 +188,13 @@ int main() {
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
 
+
         if (_kbhit()) {
-            char move = _getch();
-            if (move == 0 || move == 224) { // Handle special keys
-                move = _getch();
-                switch (move) {
-                case 72:
-                    movePlayer(player, 'w');
-                    break;
-                case 80:
-                    movePlayer(player, 's');
-                    break;
-                case 75:
-                    movePlayer(player, 'a');
-                    break;
-                case 77:
-                    movePlayer(player, 'd');
-                    break;
-                default:
-                    break;
-                }
+            move = _getch();
+            if (move == 0 || move == 224) {
+                move = _getch(); // Получаем код конкретной стрелки
             }
-            else {
-                movePlayer(player, tolower(move));
-            }
+            movePlayer(player, move);
         }
     }
 
