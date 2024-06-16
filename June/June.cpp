@@ -1,6 +1,8 @@
-﻿#include <iostream>
+#include <iostream>
 #include <windows.h>
 #include <conio.h>
+
+
 using namespace std;
 
 // Данные карты
@@ -27,7 +29,7 @@ int local_x;
 int local_y;
 
 // Методы Карты
-void updateMap(int width, int height) {
+void generateMap(int width, int height) {
     map = new char* [height];
     for (int y = 0; y < height; ++y) {
         map[y] = new char[width];
@@ -47,7 +49,13 @@ void deleteMap(int width, int height) {
 void expandMap(int player[2]) {
     int newWidth = mapWidth + 2 * EXPAND_SIZE_X;
     int newHeight = mapHeight + 2 * EXPAND_SIZE_Y;
-
+    //Для своей устоновки координат
+    if (newWidth < player[0]) {
+        newWidth += player[0];
+    }
+    if (newHeight < player[1]) {
+        newHeight += player[1];
+    }
     char** newMap = new char* [newHeight];
     for (int y = 0; y < newHeight; ++y) {
         newMap[y] = new char[newWidth];
@@ -81,6 +89,7 @@ void expandMap(int player[2]) {
 
     player[0] += EXPAND_SIZE_X;
     player[1] += EXPAND_SIZE_Y;
+
 }
 
 void printMap(int player[2]) {
@@ -92,7 +101,7 @@ void printMap(int player[2]) {
     for (int y = startY; y < endY; ++y) {
         for (int x = startX; x < endX; ++x) {
             if (x == player[0] && y == player[1]) {
-                cout << "\033[38;5;20m\033[48;5;1m" << player_char << "\033[0m";
+                cout << "\033[38;5;20m\033[48;5;1m\033[1m" << player_char << "\033[0m";
             }
             else {
                 switch (map[y][x]) {
@@ -111,16 +120,17 @@ void printMap(int player[2]) {
                 }
             }
         }
+
         cout << endl;
     }
 }
 
 // Методы Игрока
 void backpack_menu() {
-    while (_getch() != 27) {
+    while (true) {
         system("cls");
-        cout << _getch() << endl;
-        cout << "\033[38;2;158;100;0m __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
+        cout << "\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
+
     }
 }
 
@@ -170,34 +180,43 @@ void movePlayer(int player[2], int move) {
     }
 }
 
-int main() {
-    int move = ' ';
+char getchar(int player[2]) {
+    return player_char == "^" ? map[player[0]][player[1]--] : player_char == "v" ? map[player[0]][player[1]++] : player_char == ">" ? map[player[0]++][player[1]] : map[player[0]--][player[1]];
+}
 
+int main() {
+    cout << "\033[37,5,4m";
+    int move = ' ';
+    char gc = ' ';
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
     srand(time(NULL));
-    updateMap(start_map_size, start_map_size);
-    int player[2] = { start_map_size / 2, start_map_size / 2 };
+    generateMap(start_map_size, start_map_size);
+    //int player[2] = { start_map_size / 2, start_map_size / 2 };
+    int player[2] = { 1000,1000 };
+
     local_x = player[0]; local_y = player[1];
     while (true) {
+        Sleep(35);
         system("cls");
         printMap(player);
+        if (_kbhit()) {
+            move = _getch();
+            movePlayer(player, move);
+            gc = getchar(player);
+        }
         cout << endl << "lX: " << local_x << " | lY: " << local_y;
         cout << endl << "gX: " << player[0] << " | gY: " << player[1];
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
-
-
-        if (_kbhit()) {
-            move = _getch();
-            if (move == 0 || move == 224) {
-                move = _getch(); // Получаем код конкретной стрелки
-            }
-            movePlayer(player, move);
-        }
+        cout << endl << "Char: " << gc;
     }
 
     deleteMap(mapWidth, mapHeight);
-    return 0;
+
+
 }
+
+
+//Консоль?
