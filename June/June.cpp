@@ -6,6 +6,9 @@ using namespace std;
 
 
 // Данные карты
+int VIEW_WIDTH = 20;
+int VIEW_HEIGHT = 10;
+
 const int start_map_size = 1;
 
 const int EXPAND_SIZE_X = VIEW_WIDTH / 2;
@@ -14,6 +17,7 @@ const int EXPAND_SIZE_Y = VIEW_HEIGHT / 2;
 const string TREE = "\033[48;5;22m^\033[0m";
 const string COPPER = "\033[48;5;172m#\033[0m";
 const string FLOOR = "\033[48;5;28m \033[0m";
+const string ZOMBIE = "\033[38;5;22m\033[48;5;64m@\033[0m";
 
 string** map;
 int mapWidth = start_map_size;
@@ -27,9 +31,6 @@ enum class direction { UP = '^', DOWN = 'v', LEFT = '<', RIGHT = '>' };
 
 int local_x;
 int local_y;
-
-int VIEW_WIDTH = 20;
-int VIEW_HEIGHT = 10;
 
 const int SIMULATION_MAP_X = 25;
 const int SIMULATION_MAP_y = 15;
@@ -188,9 +189,7 @@ void movePlayer(int player[2], int move) {
         expandMap(player);
     }
 }
-
-
-int main() {
+void start() {
     cout << "\033[37,5,4m";
     int move = ' ';
 
@@ -227,5 +226,10 @@ int main() {
     }
 
     deleteMap(mapWidth, mapHeight);
+}
+
+int main() {
+    start();
+    
 }
 //Движение мобов должно происходить в определённом радиусе
