@@ -123,7 +123,7 @@ void backpack_menu() {
     while (true) {
         system("cls");
         cout << "\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
-        
+
     }
 }
 
@@ -136,7 +136,7 @@ void destroy(int player[2]) {
     else if (player_char == ">" && x < mapWidth - 1) x++;
     else if (player_char == "<" && x > 0) x--;
     st
-    if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
+        if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
 }
 
 void movePlayer(int player[2], int move) {
@@ -192,7 +192,7 @@ void movePlayer(int player[2], int move) {
 int main() {
     cout << "\033[37,5,4m";
     int move = ' ';
-    
+
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -203,26 +203,26 @@ int main() {
 
     local_x = player[0]; local_y = player[1];
 
-    
+
 
     while (true) {
-     
+
 
         system("cls");
         printMap(player);
         if (_kbhit()) {
             move = _getch();
             movePlayer(player, move);
-           
+
         }
 
         cout << endl << "lX: " << local_x << " | lY: " << local_y;
         cout << endl << "gX: " << player[0] << " | gY: " << player[1];
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
-      
 
-        Sleep(35);  
+
+        Sleep(35);
     }
 
     deleteMap(mapWidth, mapHeight);
