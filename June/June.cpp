@@ -22,6 +22,7 @@ int mapHeight = start_map_size;
 // Данные игрока
 string* backpack;
 string player_char = "LT Team";
+int health = 100; //Добавить бар?
 enum class direction { UP = '^', DOWN = 'v', LEFT = '<', RIGHT = '>' };
 
 int local_x;
@@ -135,7 +136,7 @@ void destroy(int player[2]) {
     else if (player_char == "v" && y < mapHeight - 1) y++;
     else if (player_char == ">" && x < mapWidth - 1) x++;
     else if (player_char == "<" && x > 0) x--;
-    st
+    
         if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
 }
 
