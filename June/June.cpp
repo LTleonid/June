@@ -2,19 +2,22 @@
 #include <windows.h>
 #include <conio.h>
 
-
 using namespace std;
 
+
 // Данные карты
-const int start_map_size = 1;
 int VIEW_WIDTH = 20;
 int VIEW_HEIGHT = 10;
+
+const int start_map_size = 1;
+
 const int EXPAND_SIZE_X = VIEW_WIDTH / 2;
 const int EXPAND_SIZE_Y = VIEW_HEIGHT / 2;
 
 const string TREE = "\033[48;5;22m^\033[0m";
 const string COPPER = "\033[48;5;172m#\033[0m";
 const string FLOOR = "\033[48;5;28m \033[0m";
+const string ZOMBIE = "\033[38;5;22m\033[48;5;64m@\033[0m";
 
 string** map;
 int mapWidth = start_map_size;
@@ -23,14 +26,18 @@ int mapHeight = start_map_size;
 // Данные игрока
 string* backpack;
 string player_char = "LT Team";
+int health = 100; //Добавить бар?
 enum class direction { UP = '^', DOWN = 'v', LEFT = '<', RIGHT = '>' };
 
 int local_x;
 int local_y;
 
+const int SIMULATION_MAP_X = 25;
+const int SIMULATION_MAP_y = 15;
+
 // Методы Карты
 void generateMap(int width, int height) {
-    map = new string* [height];
+    map = new string * [height];
     for (int y = 0; y < height; ++y) {
         map[y] = new string[width];
         for (int x = 0; x < width; ++x) {
@@ -56,10 +63,10 @@ void expandMap(int player[2]) {
     if (newHeight < player[1]) {
         newHeight += player[1];
     }
-    string** newMap = new string* [newHeight];
+    string** newMap = new string * [newHeight];
     for (int y = 0; y < newHeight; ++y) {
         newMap[y] = new string[newWidth];
-    }   
+    }
 
     for (int y = 0; y < newHeight; ++y) {
         for (int x = 0; x < newWidth; ++x) {
@@ -122,6 +129,18 @@ void backpack_menu() {
     }
 }
 
+void destroy(int player[2]) {
+    int x = player[0];
+    int y = player[1];
+
+    if (player_char == "^" && y > 0) y--;
+    else if (player_char == "v" && y < mapHeight - 1) y++;
+    else if (player_char == ">" && x < mapWidth - 1) x++;
+    else if (player_char == "<" && x > 0) x--;
+    
+        if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
+}
+
 void movePlayer(int player[2], int move) {
     switch (move) {
     case 'w':
@@ -159,6 +178,9 @@ void movePlayer(int player[2], int move) {
     case 77: // Вправо стрелка
         player_char = '>';
         break;
+    case 32:
+        destroy(player);
+        break;
     default:
         break;
     }
@@ -167,23 +189,10 @@ void movePlayer(int player[2], int move) {
         expandMap(player);
     }
 }
-
-string getchar(int player[2]) {
-    int x = player[0];
-    int y = player[1];
-
-    if (player_char == "^" && y > 0) y--;
-    else if (player_char == "v" && y < mapHeight - 1) y++;
-    else if (player_char == ">" && x < mapWidth - 1) x++;
-    else if (player_char == "<" && x > 0) x--;
-
-    return map[y][x];
-}
-
-int main() {
+void start() {
     cout << "\033[37,5,4m";
     int move = ' ';
-    string gc = " ";
+
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -193,26 +202,34 @@ int main() {
     //int player[2] = { 1000,1000 };
 
     local_x = player[0]; local_y = player[1];
+
+
+
     while (true) {
-       // Sleep(35);
+
+
         system("cls");
         printMap(player);
         if (_kbhit()) {
             move = _getch();
             movePlayer(player, move);
-            gc = getchar(player);
+
         }
+
         cout << endl << "lX: " << local_x << " | lY: " << local_y;
         cout << endl << "gX: " << player[0] << " | gY: " << player[1];
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
-        cout << endl << "Char: " << gc;
+
+
+        Sleep(35);
     }
 
     deleteMap(mapWidth, mapHeight);
-
-
 }
 
-
-//Консоль?
+int main() {
+    start();
+    
+}
+//Движение мобов должно происходить в определённом радиусе
