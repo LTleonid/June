@@ -7,16 +7,16 @@ using namespace std;
 
 // Данные карты
 const int start_map_size = 1;
-const int VIEW_WIDTH = 20;
-const int VIEW_HEIGHT = 10;
+int VIEW_WIDTH = 20;
+int VIEW_HEIGHT = 10;
 const int EXPAND_SIZE_X = VIEW_WIDTH / 2;
 const int EXPAND_SIZE_Y = VIEW_HEIGHT / 2;
 
-const char TREE = '^';
-const char COPPER = '#';
-const char FLOOR = ' ';
+const string TREE = "\033[48;5;22m^\033[0m";
+const string COPPER = "\033[48;5;172m#\033[0m";
+const string FLOOR = "\033[48;5;28m \033[0m";
 
-char** map;
+string** map;
 int mapWidth = start_map_size;
 int mapHeight = start_map_size;
 
@@ -30,9 +30,9 @@ int local_y;
 
 // Методы Карты
 void generateMap(int width, int height) {
-    map = new char* [height];
+    map = new string* [height];
     for (int y = 0; y < height; ++y) {
-        map[y] = new char[width];
+        map[y] = new string[width];
         for (int x = 0; x < width; ++x) {
             map[y][x] = FLOOR;
         }
@@ -56,10 +56,10 @@ void expandMap(int player[2]) {
     if (newHeight < player[1]) {
         newHeight += player[1];
     }
-    char** newMap = new char* [newHeight];
+    string** newMap = new string* [newHeight];
     for (int y = 0; y < newHeight; ++y) {
-        newMap[y] = new char[newWidth];
-    }
+        newMap[y] = new string[newWidth];
+    }   
 
     for (int y = 0; y < newHeight; ++y) {
         for (int x = 0; x < newWidth; ++x) {
@@ -104,20 +104,8 @@ void printMap(int player[2]) {
                 cout << "\033[38;5;20m\033[48;5;1m\033[1m" << player_char << "\033[0m";
             }
             else {
-                switch (map[y][x]) {
-                case TREE:
-                    cout << "\033[48;5;22m" << TREE << "\033[0m";
-                    break;
-                case COPPER:
-                    cout << "\033[48;5;172m" << COPPER << "\033[0m";
-                    break;
-                case FLOOR:
-                    cout << "\033[48;5;28m \033[0m";
-                    break;
-                default:
-                    cout << "\033[48;5;28m \033[0m";
-                    break;
-                }
+                cout << map[y][x];
+
             }
         }
 
@@ -180,25 +168,33 @@ void movePlayer(int player[2], int move) {
     }
 }
 
-char getchar(int player[2]) {
-    return player_char == "^" ? map[player[0]][player[1]--] : player_char == "v" ? map[player[0]][player[1]++] : player_char == ">" ? map[player[0]++][player[1]] : map[player[0]--][player[1]];
+string getchar(int player[2]) {
+    int x = player[0];
+    int y = player[1];
+
+    if (player_char == "^" && y > 0) y--;
+    else if (player_char == "v" && y < mapHeight - 1) y++;
+    else if (player_char == ">" && x < mapWidth - 1) x++;
+    else if (player_char == "<" && x > 0) x--;
+
+    return map[y][x];
 }
 
 int main() {
     cout << "\033[37,5,4m";
     int move = ' ';
-    char gc = ' ';
+    string gc = " ";
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
     srand(time(NULL));
     generateMap(start_map_size, start_map_size);
-    //int player[2] = { start_map_size / 2, start_map_size / 2 };
-    int player[2] = { 1000,1000 };
+    int player[2] = { start_map_size / 2, start_map_size / 2 };
+    //int player[2] = { 1000,1000 };
 
     local_x = player[0]; local_y = player[1];
     while (true) {
-        Sleep(35);
+       // Sleep(35);
         system("cls");
         printMap(player);
         if (_kbhit()) {
