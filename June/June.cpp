@@ -4,16 +4,16 @@
 
 using namespace std;
 
-const int TICK = 30;
+const int TICK = 60;
 int tickCounter = 0;
 // Данные карты
-int vievWidth = 20;
+int vievWidth = 104;
 int viewHeight = 10;
 
 const int start_map_size = 1;
 
 const int EXPAND_SIZE_X = vievWidth / 2;
-const int EXPAND_SIZE_Y = viewHeight / 2;
+const int EXPAND_SIZE_Y = viewHeight * 2;
 
 const string TREE = "\033[48;5;22m^\033[0m";
 const string COPPER = "\033[48;5;172m#\033[0m";
@@ -124,7 +124,7 @@ void expandMap(Player &player) {
 void backpackMenu(Player &player) {
     while (true) {
         system("cls");
-        cout << "\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
+        cout << "\t\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
         cout << "\n\nBackpack Contents:\n";
         for (int i = 0; i < player.backpack_size; ++i) {
             
@@ -229,19 +229,22 @@ void movePlayer(Player &player, int move) {
 }
 
 void printMap(Player& player) {
-    for (int y = player.y - EXPAND_SIZE_Y; y < player.y + EXPAND_SIZE_Y; ++y) {
-        for (int x = player.x - EXPAND_SIZE_X; x < player.x + EXPAND_SIZE_X; ++x) {
-            if (x == player.x && y == player.y) {
-                cout << player.player_char;
+    if (tickCounter % 2 == 0) {
+        system("cls");
+        for (int y = player.y - viewHeight; y < player.y + viewHeight; ++y) {
+            for (int x = player.x - vievWidth; x < player.x + vievWidth; ++x) {
+                if (x == player.x && y == player.y) {
+                    cout << player.player_char;
+                }
+                else if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
+                    cout << map[y][x];
+                }
+                else {
+                    cout << FLOOR;
+                }
             }
-            else if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
-                cout << map[y][x];
-            }
-            else {
-                cout << FLOOR;
-            }
+            cout << endl;
         }
-        cout << endl;
     }
 }
 
@@ -260,7 +263,7 @@ void start() {
 
     while (true) {
         if (tickCounter == TICK) tickCounter = 0;
-        system("cls");
+        
         printMap(player);
         if (_kbhit()) {
             move = _getch();
@@ -271,7 +274,7 @@ void start() {
         cout << endl << "gX: " << player.x << " | gY: " << player.y;
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
-        cout << endl << "Tick: " << tickCounter;
+        cout << endl << "Tick: " << tickCounter << endl;
         Sleep(1000 / TICK);
         tickCounter++;
     }
