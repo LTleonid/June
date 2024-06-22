@@ -137,8 +137,8 @@ void destroy(int player[2]) {
     else if (player_char == "v" && y < mapHeight - 1) y++;
     else if (player_char == ">" && x < mapWidth - 1) x++;
     else if (player_char == "<" && x > 0) x--;
-    
-        if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
+
+    if (map[y][x] != FLOOR) { map[y][x] = FLOOR; }
 }
 
 void movePlayer(int player[2], int move) {
@@ -228,8 +228,10 @@ void start() {
     deleteMap(mapWidth, mapHeight);
 }
 
+
 int main() {
-    start();
-    
+
+    //start();
+
 }
 //Движение мобов должно происходить в определённом радиусе
