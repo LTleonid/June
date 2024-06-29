@@ -39,6 +39,8 @@ struct Item {
 struct Player {
     string player_char = "LT Team";
     int health = 90;
+    float regenerationMultiply = 1;
+    int healthRegeneration = (health * 0.1) * regenerationMultiply;
     int local_x = 0;
     int local_y = 0;
     int x = start_map_size;
@@ -287,66 +289,54 @@ void craftItem(Player& player, CraftItem& craftItem) {
         addItem(player, craftItem.name);
     }
 }
-
 void craftingMenu(Player& player) {
+    int selectedItemIndex = 0;
+
     while (true) {
         system("cls");
-        cout << "\033[38;2;158;100;0m   ___________                .__  __             \n\\__    ___/___   ____    __|__|/  |_   ____    \n  |    | /  _ \\ /    \\  /  _ \\  \\   __\\_/ __ \\   \n  |    |(  <_> )   |  (  <_> )  ||  |  \\  ___/   \n  |____| \\____/|___|  / \\____/|__||__|   \\___  >  \n                   \\/                       \\/  \033[0m";
-        cout << "Select an item to craft:\n";
+        cout << "Crafting Menu\n\n";
+        cout << "Available Items:\n";
+
         for (int i = 0; i < craftableItemCount; ++i) {
-            cout << i + 1 << ". " << craftableItems[i].name << "\n";
-        }
-        cout << craftableItemCount + 1 << ". Exit\n";
-
-        int choice;
-        cin >> choice;
-
-        if (choice == craftableItemCount + 1) {
-            break;
-        }
-
-        if (choice > 0 && choice <= craftableItemCount) {
-            CraftItem item = craftableItems[choice - 1];
-            bool canCraft = true;
-
-            for (int i = 0; i < item.requiredItemCount; ++i) {
-                bool found = false;
-                for (int j = 0; j < player.backpackSize; ++j) {
-                    if (player.backpack[j].name == item.requiredItems[i].name && player.backpack[j].count >= item.requiredItems[i].count) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    canCraft = false;
-                    break;
-                }
-            }
-
-            if (canCraft) {
-                for (int i = 0; i < item.requiredItemCount; ++i) {
-                    for (int j = 0; j < player.backpackSize; ++j) {
-                        if (player.backpack[j].name == item.requiredItems[i].name) {
-                            player.backpack[j].count -= item.requiredItems[i].count;
-                            if (player.backpack[j].count == 0) {
-                                for (int k = j; k < player.backpackSize - 1; ++k) {
-                                    player.backpack[k] = player.backpack[k + 1];
-                                }
-                                player.backpackSize--;
-                            }
-                            break;
-                        }
-                    }
-                }
-                addItem(player, item.name);
-                cout << "Crafted " << item.name << "!\n";
+            if (i == selectedItemIndex) {
+                cout << "\033[48;2;100;100;100m ";
             }
             else {
-                cout << "Not enough resources to craft " << item.name << "!\n";
+                cout << "   ";
             }
+
+            cout << craftableItems[i].name << "\n";
+            cout << "\033[0m";
+        }
+
+        cout << "\nBackpack:\n";
+        for (int i = 0; i < player.backpackSize; ++i) {
+            cout << player.backpack[i].name << " x" << player.backpack[i].count << "\n";
+        }
+
+        int key = _getch();
+        switch (key) {
+        case 72: // Вверх стрелка
+        case 'w':
+        case 'W':
+            if (selectedItemIndex > 0) selectedItemIndex--;
+            break;
+        case 80: // Вниз стрелка
+        case 's':
+        case 'S':
+            if (selectedItemIndex < craftableItemCount - 1) selectedItemIndex++;
+            break;
+        case 13: // Enter
+            craftItem(player, craftableItems[selectedItemIndex]);
+            break;
+        case 27: // Esc
+            return;
+        default:
+            break;
         }
     }
 }
+
 
 void attackEnemy(Player& player) {
     int attackRange = 2;
