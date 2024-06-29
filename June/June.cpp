@@ -278,7 +278,6 @@ void movePlayer(Player &player, int move) {
 }
 
 void printMap(Player& player) {
-
         system("cls");
         for (int y = player.y - viewHeight; y < player.y + viewHeight; ++y) {
             for (int x = player.x - vievWidth; x < player.x + vievWidth; ++x) {
