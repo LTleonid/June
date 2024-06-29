@@ -8,7 +8,7 @@ using namespace std;
 
 const int TICK = 60;
 int tickCounter = 0;
-
+bool timeset = true;
 const int viewWidth = 20;
 const int viewHeight = 10;
 
@@ -79,9 +79,10 @@ struct CraftItem {
     int requiredCount;
     Item requiredItems[10];
     int requiredItemCount;
+    string additionalRequired = "none";
 };
 
-CraftItem craftableItems[10];
+CraftItem* craftableItems;
 int craftableItemCount = 0;
 
 void generateMap(int width, int height) {
@@ -216,22 +217,34 @@ void moveEnemy(Player& player) {
 }
 
 void backpackMenu(Player& player) {
-    while (true) {
+    int user = 0;
+    int choice = 0;
+    while (user != 27) {
         system("cls");
-        cout << "\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
-        for (int i = 0; i < player.backpackSize; ++i) {
-            cout << player.backpack[i].name << " x" << player.backpack[i].count << "\n";
+        switch (user) {
+        case 'w':
+        case 'W':
+        case 72:
+            if (choice > 0) choice--;
+            break;
+        case 's':
+        case 'S':
+        case 80:
+            if (choice < player.backpackSize - 1) choice++;
+            break;
         }
 
-        switch (_getch()) {
-        case 'w':
-            break;
-        default:
-            break;
+        cout << "\033[38;2;158;100;0m   __________                  __    __________                  __    \n\\______   \\_____     ____  |  | __\\______   \\_____     ____  |  | __\n |    |  _/\\__  \\  _/ ___\\ |  |/ / |     ___/\\__  \\  _/ ___\\ |  |/ /\n |    |   \\ / __ \\_\\  \\___ |    <  |    |     / __ \\_\\  \\___ |    < \n |______  /(____  / \\___  >|__|_ \\ |____|    (____  / \\___  >|__|_ \\\n        \\/      \\/      \\/      \\/                \\/      \\/      \\/\033[0m";
+        for (int i = 0; i < player.backpackSize; ++i) {
+            if (i == choice) cout << "\033[48;2;100;100;100m";
+            cout << "\n" << player.backpack[i].name << " x" << player.backpack[i].count;
+            cout << "\033[0m";
         }
-        break;
+        cout << '\n';
+        user = _getch();
     }
 }
+
 
 void addItem(Player& player, string item_name) {
     for (int i = 0; i < player.backpackSize; ++i) {
@@ -258,20 +271,31 @@ void craftItem(Player& player, CraftItem& craftItem) {
 
     for (int i = 0; i < craftItem.requiredItemCount; ++i) {
         bool found = false;
+        if (craftItem.additionalRequired != "none") {
+            for (int j = 0; j < player.backpackSize; ++j) {
+                if (player.backpack[j].name == craftItem.additionalRequired) {
+
+                    found = true;
+                    break;
+                }
+            }
+        }
         for (int j = 0; j < player.backpackSize; ++j) {
             if (player.backpack[j].name == craftItem.requiredItems[i].name &&
                 player.backpack[j].count >= craftItem.requiredItems[i].count) {
+
                 found = true;
                 break;
             }
+
         }
         if (!found) {
             canCraft = false;
             break;
         }
     }
-
     if (canCraft) {
+
         for (int i = 0; i < craftItem.requiredItemCount; ++i) {
             for (int j = 0; j < player.backpackSize; ++j) {
                 if (player.backpack[j].name == craftItem.requiredItems[i].name) {
@@ -290,15 +314,15 @@ void craftItem(Player& player, CraftItem& craftItem) {
     }
 }
 void craftingMenu(Player& player) {
-    int selectedItemIndex = 0;
+    int choice = 0;
 
     while (true) {
         system("cls");
-        cout << "Crafting Menu\n\n";
+        cout << "Crafting Menu\n";
         cout << "Available Items:\n";
 
         for (int i = 0; i < craftableItemCount; ++i) {
-            if (i == selectedItemIndex) {
+            if (i == choice) {
                 cout << "\033[48;2;100;100;100m ";
             }
             else {
@@ -319,15 +343,15 @@ void craftingMenu(Player& player) {
         case 72: // Вверх стрелка
         case 'w':
         case 'W':
-            if (selectedItemIndex > 0) selectedItemIndex--;
+            if (choice > 0) choice--;
             break;
         case 80: // Вниз стрелка
         case 's':
         case 'S':
-            if (selectedItemIndex < craftableItemCount - 1) selectedItemIndex++;
+            if (choice < craftableItemCount - 1) choice++;
             break;
         case 13: // Enter
-            craftItem(player, craftableItems[selectedItemIndex]);
+            craftItem(player, craftableItems[choice]);
             break;
         case 27: // Esc
             return;
@@ -419,19 +443,34 @@ void levelUpMenu(Player& player) {
             switch (i)
             {
             case 0:
-                if (choice == 0) cout << "\033[48;2;100;100;100m";
-                cout << "1. Increase health (Current: " << player.health << ")\n";
-                cout << "\033[0m";
+                if (choice == 0) {
+                    cout << "\033[48;2;100;100;100m";
+                    cout << "1. Upgarde health (Current: " << player.health << " + 10)\n";
+                    cout << "\033[0m";
+                }
+                else { cout << "\t1. Upgarde health (Current: " << player.health << ")\n"; }
+
+
                 break;
             case 1:
-                if (choice == 1) cout << "\033[48;2;100;100;100m";
-                cout << "2. Increase damage (Current: " << player.damage << ")\n";
-                cout << "\033[0m";
+                if (choice == 1) {
+                    cout << "\033[48;2;100;100;100m";
+                    cout << "2. Upgrade Damage (Current: " << player.damage << " + 5)\n";
+                    cout << "\033[0m";
+                }
+                else {
+                    cout << "\t2. Upgrade Damage (Current: " << player.damage << ")\n";
+                }
                 break;
             case 2:
-                if (choice == 2) cout << "\033[48;2;100;100;100m";
-                cout << "3. Increase backpack capacity (Current: " << player.backpackCapacity << ")\n";
-                cout << "\033[0m";
+                if (choice == 2) {
+                    cout << "\033[48;2;100;100;100m";
+                    cout << "\t3. Upgrade Backpack Capacity (Current: " << player.backpackCapacity << " + 3)\n";
+                    cout << "\033[0m";
+                }
+                else {
+                    cout << "3. Upgrade Backpack Capacity (Current: " << player.backpackCapacity << ")\n";
+                }
                 break;
             default:
                 break;
@@ -506,18 +545,29 @@ void movePlayer(Player& player, int move) {
 
 void printMap(Player& player) {
     system("cls");
+    if (tickCounter % 500 == 0 && !timeset) {
+        timeset = true;
+    }
+    else if (tickCounter % 500 == 0 && timeset) {
+        timeset = false;
+    }
+
+
     for (int y = player.y - viewHeight / 2; y < player.y + viewHeight / 2; ++y) {
         for (int x = player.x - viewWidth / 2; x < player.x + viewWidth / 2; ++x) {
             if (x == player.x && y == player.y) {
+                if (timeset) cout << "\033[2m";
                 cout << player.player_char;
             }
             else if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
+                if (timeset) cout << "\033[2m";
                 cout << map[y][x];
             }
 
         }
         cout << endl;
     }
+    cout << "\033[0m";
     moveEnemy(player);
 }
 
@@ -529,6 +579,7 @@ void gui(Player& player) {
             cout << " ";
         }
     }
+
     cout << "\033[0m";
     cout << endl;
 }
@@ -537,14 +588,16 @@ void gui(Player& player) {
 
 
 void initializeCraftableItems() {
+    craftableItemCount = 7;
+    craftableItems = new CraftItem[craftableItemCount];
 
-    craftableItems[craftableItemCount] = { "\033[38;5;94m&\033[0m", "Crafting Table", 6, {{"Wood", 4}, {"Stick", 2}}, 2 };
-
-    craftableItems[craftableItemCount] = { "\033[38;5;240m#\033[0m", "Furnace", 8, {{"Cobblestone", 8}}, 1 };
-
-    craftableItems[craftableItemCount] = { "\033[38;5;220m!\033[0m", "Sword", 2, {{"Iron", 2}}, 1 };
-    craftableItems[craftableItemCount] = { "\033[38;5;94m(\033[0m", "Armor", 4, {{"Iron", 4}}, 1 };
-    craftableItemCount = 4;
+    craftableItems[0] = { "\033[38;5;166m|\033[0m", "Stick", 2, { {"Wood", 4} }, 1 };
+    craftableItems[1] = { "\033[38;5;94m&\033[0m", "Crafting Table", 6, { {"Wood", 4}, {"Stick", 2} }, 2 };
+    craftableItems[2] = { "\033[38;5;240m#\033[0m", "Furnace", 8, { {"Cobblestone", 8} }, 1, "Crafting Table" };
+    craftableItems[3] = { "\033[38;5;220m!\033[0m", "Sword", 2, { {"Iron", 2} }, 1, "Crafting Table" };
+    craftableItems[4] = { "\033[38;5;94m(\033[0m", "Armor", 4, { {"Iron", 4} }, 1, "Crafting Table" };
+    craftableItems[5] = { "\033[38;5;94m(\033[0m", "Iron", 4, { {"Raw Iron", 4} }, 1, "Furnace" };
+    craftableItems[6] = { "\033[38;5;94m(\033[0m", "Gold", 4, { {"Raw Gold", 4} }, 1, "Furnace" };
 }
 
 
@@ -562,7 +615,7 @@ void start() {
 
 
     while (true) {
-        if (tickCounter > TICK) tickCounter = 0;
+
         printMap(player);
         if (_kbhit()) {
             move = _getch();
@@ -573,9 +626,11 @@ void start() {
         cout << endl << "gX: " << player.x << " | gY: " << player.y;
         cout << endl << "XM: " << mapWidth << " | YM: " << mapHeight;
         cout << endl << "Memory_Map: " << ((mapHeight * mapWidth) / 1024 / 1024);
+        cout << endl << "tick: " << tickCounter;
+        cout << endl << "time: " << timeset;
         cout << endl << "move: " << move << endl;
         tickCounter++;
-        Sleep(1000 / TICK);
+        Sleep(35);
 
     }
 
